@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -15,7 +16,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 	
 	@Autowired
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+	public void configure(AuthenticationManagerBuilder auth) throws Exception {
 		
 		auth.inMemoryAuthentication().withUser("admin").password("admin").roles("ROLE");
 	}
@@ -23,12 +24,15 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-		.antMatchers("/categorias").permitAll() //categorias todos podem acessar
-		.anyRequest().authenticated() //qualquer requisição (exceto categorias) tem q estar autenticadas	
-		.and()
-		.httpBasic().and()
+			.antMatchers("/categorias").permitAll() //categorias todos podem acessar
+			.anyRequest().authenticated() //qualquer requisição (exceto categorias) tem q estar autenticadas	
+			.and()
 		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()//n iremos usar sessions
 		.csrf().disable(); //n permite javascript injection
+	}
+	
+	public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+		resources.stateless(true); //para n manter estados nenhum no servidor (ssesion)
 	}
 
 }
